@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>报告组件样张 · 素纸主题</title>
+<style>
+  :root{
+    --paper:#FCFCFB; --panel:#FFFFFF; --ink:#1C1D1F; --ink-2:#5B6068; --ink-3:#8A9099;
+    --line:#E3E5E8; --accent:#2F4B7C;
+    --ok:#2E7D5B; --warn:#B7791F; --bad:#B3261E;
+    --sans:"PingFang SC","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--sans);
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 72px}
+
+  .head{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+  .head h1{margin:0 0 10px;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+  .verdict{margin:0;font-size:17px;line-height:1.55;max-width:62ch}
+  .verdict b{color:var(--bad);font-weight:600}
+  .meta{margin:12px 0 0;font-size:13px;color:var(--ink-3)}
+  .meta b{color:var(--ink-2);font-weight:500}
+
+  h2{margin:36px 0 12px;font-size:19px;font-weight:700;letter-spacing:-.005em}
+  h2 .n{color:var(--ink-3);font-weight:400;font-size:15px;margin-left:8px}
+  p{margin:0 0 12px;max-width:74ch}
+  .lede{color:var(--ink-2);font-size:14px;margin-top:-4px}
+
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* 对象看板：横排一行便于横向比较 */
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:6px 0 4px}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 15px}
+  .cell.focus{border-color:var(--accent);border-width:2px;padding:13px 14px}
+  .cell h3{margin:0 0 2px;font-size:15.5px;font-weight:600}
+  .cell .stage{font-size:13px;color:var(--ink-2);margin:0 0 10px}
+  .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:30px;
+       line-height:1.1;font-weight:600;letter-spacing:-.02em}
+  .big.late{color:var(--bad)} .big.fine{color:var(--ok)}
+  .big .u{font-size:13px;font-weight:400;color:var(--ink-2);margin-left:3px;font-family:var(--sans)}
+  .cell .next{margin:8px 0 0;font-size:12.5px;color:var(--ink-3)}
+
+  .tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12.5px;
+       font-weight:500;border:1px solid currentColor;white-space:nowrap}
+  .t-ok{color:var(--ok)} .t-warn{color:var(--warn)} .t-bad{color:var(--bad)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 10px}
+  th{text-align:left;font-weight:600;color:var(--ink-2);padding:8px 10px;
+     border-bottom:1.5px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.r,th.r{text-align:right}
+  .scroll{overflow-x:auto}
+
+  details{border-top:1px solid var(--line);padding:9px 0}
+  details:last-of-type{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;font-size:14px;color:var(--ink-2);list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"＋ ";color:var(--ink-3)}
+  details[open] summary::before{content:"－ "}
+  details p{margin:9px 0 4px;font-size:14px;color:var(--ink)}
+
+  svg{display:block;width:100%;height:auto}
+  .axis{font:400 11px var(--sans);fill:var(--ink-3)}
+  .lbl{font:500 12px var(--sans);fill:var(--ink-2)}
+
+  footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);
+         font-size:12.5px;color:var(--ink-3)}
+
+  @media (max-width:720px){ .board{grid-template-columns:1fr} }
+  @media (max-width:560px){ .wrap{padding:24px 16px 48px} .head h1{font-size:23px} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+  @media print{
+    @page{size:A4 portrait;margin:14mm}
+    body{background:#fff;font-size:11.5pt}
+    .wrap{max-width:none;padding:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table,tr,td,th,.cell,details{break-inside:avoid}
+    h2{break-after:avoid}
+    /* 打印时把折叠块摊开：现代浏览器认 ::details-content，旧版靠 open 属性兜底 */
+    details::details-content{content-visibility:visible!important;block-size:auto!important}
+    details{content-visibility:visible!important}
+    summary::before{content:""}
+    summary{color:var(--ink);font-weight:600}
+  }
+
+  .note{margin:2px 0 26px;font-size:13px;color:var(--ink-3);max-width:74ch}
+  .note b{color:var(--ink-2);font-weight:500}
+  .ph{color:var(--ink-3)}
+  .sw{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:6px 0 4px}
+  .sw .set{border:1px solid var(--line);border-radius:6px;padding:12px 13px;background:var(--panel)}
+  .sw h4{margin:0 0 3px;font-size:14px;font-weight:600}
+  .sw .use{margin:0 0 9px;font-size:12.5px;color:var(--ink-3)}
+  .chips{display:flex;gap:6px}
+  .chip{width:30px;height:30px;border-radius:4px;border:1px solid rgba(0,0,0,.12)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <h1>报告组件样张</h1>
+    <p class="verdict">这不是一份报告，是把所有可用的积木摆在一页上——看清楚字号、间距、颜色与打印表现。
+      每块下面一行灰字说明它用在哪。内容全是占位符：真实报告里放什么，由用户的数据决定，这份技能不预设任何行业。</p>
+    <p class="meta"><b>主题</b> 素纸 Linen　<b>正文</b> 15px / 1.65　<b>栏宽</b> 960px　<b>体积</b> 单文件，零外链</p>
+  </header>
+  <p class="note">↑ <b>页眉带</b>。四样东西缺一不可：标题、一句话结论、生成时间、数据截止时间。
+    后两个不是一回事，分开写。结论里真正的问题用语义色点出来，一份报告只点一处。</p>
+
+  <h2>并排看板</h2>
+  <div class="board">
+    <div class="cell focus">
+      <h3>【对象一】</h3>
+      <p class="stage">【当前阶段】　<span class="tag t-bad">异常</span></p>
+      <p class="big late">−6<span class="u">【单位】</span></p>
+      <p class="next">【下一节点与日期】</p>
+    </div>
+    <div class="cell">
+      <h3>【对象二】</h3>
+      <p class="stage">【当前阶段】　<span class="tag t-ok">正常</span></p>
+      <p class="big fine">+9<span class="u">【单位】</span></p>
+      <p class="next">【下一节点与日期】</p>
+    </div>
+    <div class="cell">
+      <h3>【对象三】</h3>
+      <p class="stage">【当前阶段】　<span class="tag t-warn">注意</span></p>
+      <p class="big">+2<span class="u">【单位】</span></p>
+      <p class="next">【下一节点与日期】</p>
+    </div>
+  </div>
+  <p class="note"><b>三到五个同类对象横排</b>，便于横向比较；纵向堆成长列表就比不出来了。
+    加粗边框的那一格是本页主角，<b>只能有一格</b>。大数字放"当前最该被看见的那个值"。</p>
+
+  <h2>时间线</h2>
+  <div class="scroll">
+  <svg viewBox="0 0 880 196" role="img" aria-label="时间线组件样张：三行轨道，一条当前位置竖线，逾期节点用异常色标注">
+    <g class="axis" text-anchor="middle">
+      <text x="100" y="16">刻度</text><text x="270" y="16">刻度</text>
+      <text x="440" y="16">刻度</text><text x="610" y="16">刻度</text><text x="780" y="16">刻度</text>
+    </g>
+    <g stroke="#E3E5E8" stroke-width="1">
+      <line x1="100" y1="24" x2="100" y2="176"/><line x1="270" y1="24" x2="270" y2="176"/>
+      <line x1="440" y1="24" x2="440" y2="176"/><line x1="610" y1="24" x2="610" y2="176"/>
+      <line x1="780" y1="24" x2="780" y2="176"/>
+    </g>
+
+    <line x1="343" y1="22" x2="343" y2="180" stroke="#2F4B7C" stroke-width="2"/>
+    <text x="349" y="34" class="lbl" style="fill:var(--accent);font-weight:600">当前位置</text>
+
+    <text x="84" y="66" class="lbl" text-anchor="end">对象一</text>
+    <line x1="100" y1="62" x2="173" y2="62" stroke="#B3261E" stroke-width="6" stroke-linecap="round"/>
+    <line x1="173" y1="62" x2="343" y2="62" stroke="#B3261E" stroke-width="6"
+          stroke-linecap="round" stroke-dasharray="2 6"/>
+    <circle cx="173" cy="62" r="5.5" fill="#FCFCFB" stroke="#B3261E" stroke-width="2.5"/>
+    <text x="186" y="84" class="axis" style="fill:var(--bad)">【节点】· 已逾期，虚线拖到当前位置</text>
+
+    <text x="84" y="110" class="lbl" text-anchor="end">对象二</text>
+    <line x1="100" y1="106" x2="343" y2="106" stroke="#2E7D5B" stroke-width="6" stroke-linecap="round"/>
+    <line x1="343" y1="106" x2="561" y2="106" stroke="#E3E5E8" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="561" cy="106" r="5.5" fill="#FCFCFB" stroke="#2E7D5B" stroke-width="2.5"/>
+    <text x="574" y="110" class="axis">【未来节点】</text>
+
+    <text x="84" y="154" class="lbl" text-anchor="end">对象三</text>
+    <line x1="100" y1="150" x2="343" y2="150" stroke="#B7791F" stroke-width="6" stroke-linecap="round"/>
+    <line x1="343" y1="150" x2="391" y2="150" stroke="#E3E5E8" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="391" cy="150" r="5.5" fill="#FCFCFB" stroke="#B7791F" stroke-width="2.5"/>
+    <text x="404" y="154" class="axis">【临近节点】</text>
+  </svg>
+  </div>
+  <p class="note"><b>手写内联 SVG，不引图表库</b>——这样断网能开、颜色跟着主题走、打印不丢。
+    已过去的实线、未来的浅灰、逾期的虚线拖到当前位置：三种线型各自编码一件事。
+    数值直接标在节点旁，<b>不做 hover 提示</b>，打印出来提示就没了。</p>
+
+  <h2>数据表</h2>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr><th>对象</th><th>说明</th><th class="r">数值 A</th><th class="r">数值 B</th>
+          <th class="r">偏差</th><th>归属</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>【对象一】</td><td class="ph">【一句话说明】</td>
+          <td class="r num">09-04</td><td class="r num">09-10</td>
+          <td class="r num" style="color:var(--bad)">+6</td><td class="ph">【角色】</td></tr>
+      <tr><td>【对象二】</td><td class="ph">【一句话说明】</td>
+          <td class="r num">3.28</td><td class="r num">3.20</td>
+          <td class="r num" style="color:var(--warn)">+0.08</td><td class="ph">【角色】</td></tr>
+      <tr><td>【对象三】</td><td class="ph">【一句话说明】</td>
+          <td class="r num">120</td><td class="r num">120</td>
+          <td class="r num" style="color:var(--ok)">0</td><td class="ph">【角色】</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note"><b>数值列右对齐 + 等宽字体</b>，小数点自然对齐——等宽只给数字用，标签不要用。
+    只画横线不画竖线。归属列写<b>角色</b>，不写人名。</p>
+
+  <h2>状态标签</h2>
+  <p><span class="tag t-ok">正常</span>　<span class="tag t-warn">注意</span>　<span class="tag t-bad">异常</span></p>
+  <p class="note">三档到顶，不要第四档。<b>标签里有文字</b>，不靠颜色单独表意——色盲用户和黑白打印都还读得懂。
+    强调色（本主题是靛蓝）不参与状态表达，它只标结论与主数据。</p>
+
+  <h2>折叠块</h2>
+  <details>
+    <summary>【展开才看的长说明：原因、经过、取舍】</summary>
+    <p>把占版面又不是人人要看的内容收在这里：一件事的来龙去脉、被否掉的方案、原始数据。
+      默认收起，标题要能让人判断值不值得展开。</p>
+    <p><b>打印时会自动摊开</b>——靠覆盖 <span class="num">details::details-content</span> 的
+      <span class="num">content-visibility</span> 实现，写 <span class="num">display</span> 那一套无效。</p>
+  </details>
+  <details>
+    <summary>【第二个折叠块】</summary>
+    <p>相邻折叠块共用分割线，形成一条紧凑的列表。</p>
+  </details>
+  <p class="note">原生 <b>&lt;details&gt;</b>，零 JavaScript。</p>
+
+  <h2>四套主题的色板</h2>
+  <div class="sw">
+    <div class="set">
+      <h4>素纸 Linen</h4><p class="use">默认 · 对外发文</p>
+      <div class="chips">
+        <div class="chip" style="background:#FCFCFB" title="纸面"></div>
+        <div class="chip" style="background:#1C1D1F" title="正文"></div>
+        <div class="chip" style="background:#2F4B7C" title="强调"></div>
+        <div class="chip" style="background:#2E7D5B" title="正常"></div>
+        <div class="chip" style="background:#B7791F" title="注意"></div>
+        <div class="chip" style="background:#B3261E" title="异常"></div>
+      </div>
+    </div>
+    <div class="set">
+      <h4>蓝图 Blueprint</h4><p class="use">参数 · 公差 · 测试数据</p>
+      <div class="chips">
+        <div class="chip" style="background:#F7F8FA"></div><div class="chip" style="background:#14181F"></div>
+        <div class="chip" style="background:#0B6E99"></div><div class="chip" style="background:#2F7A4F"></div>
+        <div class="chip" style="background:#A96A12"></div><div class="chip" style="background:#A81F1F"></div>
+      </div>
+    </div>
+    <div class="set">
+      <h4>铅字 Press</h4><p class="use">对外正式报告</p>
+      <div class="chips">
+        <div class="chip" style="background:#FFFFFF"></div><div class="chip" style="background:#111111"></div>
+        <div class="chip" style="background:#A61B29"></div><div class="chip" style="background:#2C6E49"></div>
+        <div class="chip" style="background:#9C6510"></div><div class="chip" style="background:#A61B29"></div>
+      </div>
+    </div>
+    <div class="set">
+      <h4>石板 Slate</h4><p class="use">深色备用 · 打印切回浅色</p>
+      <div class="chips">
+        <div class="chip" style="background:#12151A"></div><div class="chip" style="background:#E6E9EE"></div>
+        <div class="chip" style="background:#4FA3C7"></div><div class="chip" style="background:#4FB286"></div>
+        <div class="chip" style="background:#D9A441"></div><div class="chip" style="background:#E06C6C"></div>
+      </div>
+    </div>
+  </div>
+  <p class="note">六色依次为：纸面 / 正文 / 强调 / 正常 / 注意 / 异常。
+    换主题只改 <span class="num">:root</span> 的色板，上面所有积木的结构一行都不用动。</p>
+
+  <footer>
+    本页为组件样张，不含任何业务内容。真实报告的内容全部来自用户的数据。
+    单文件 · 零外链 · A4 可打印。
+  </footer>
+
+</div>
+</body>
+</html>
