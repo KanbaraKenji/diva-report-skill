@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-2296 中控面板 T1 试模检测报告</title>
+<style>
+  :root{
+    /* themes/blueprint.md */
+    --paper:#F7F8FA; --panel:#FFFFFF; --ink:#14181F; --ink-2:#4A5568; --ink-3:#828B98;
+    --line:#DDE3EA; --accent:#0B6E99;
+    --ok:#2F7A4F; --warn:#A96A12; --bad:#A81F1F;
+    --sans:"PingFang SC","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--sans);
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 72px}
+
+  /* 页眉带：标题 + 一句话结论 + 两个时间 */
+  .head{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+  .head h1{margin:0 0 10px;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+  .verdict{margin:0;font-size:17px;line-height:1.55;max-width:62ch}
+  .verdict b{color:var(--bad);font-weight:600}
+  .meta{margin:12px 0 0;font-size:13px;color:var(--ink-3)}
+  .meta b{color:var(--ink-2);font-weight:500}
+
+  h2{margin:36px 0 12px;font-size:19px;font-weight:700;letter-spacing:-.005em}
+  h3{margin:22px 0 8px;font-size:15px;font-weight:600}
+  p{margin:0 0 12px;max-width:74ch}
+  .lede{color:var(--ink-2);font-size:14px;margin-top:-4px}
+
+  /* 数字：等宽只给数字用 */
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* 总评：本页主角 */
+  .score{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:6px 0 10px;
+         background:var(--panel);border:1px solid var(--line);border-radius:4px}
+  .score div{padding:16px 18px 14px}
+  .score div + div{border-left:1px solid var(--line)}
+  .score .big{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:40px;
+              line-height:1.05;font-weight:600;letter-spacing:-.02em}
+  .score .big.pass{color:var(--ok)} .score .big.fail{color:var(--bad)}
+  .score .lab{display:block;font-size:14px;font-weight:500;margin-top:4px}
+  .score .sub{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 10px;background:var(--panel)}
+  th{text-align:left;font-weight:600;color:var(--ink-2);padding:8px 10px;
+     border-bottom:1.5px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.r,th.r{text-align:right;white-space:nowrap;width:1%}
+  td.c,th.c{text-align:center}
+  td.actual{color:var(--accent)}
+  tr.fail td{background:rgba(168,31,31,.08)}   /* 不通过行：--bad 8% 透明度，整行 */
+  .scroll{overflow-x:auto}
+
+  .tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12.5px;
+       font-weight:500;border:1px solid currentColor;white-space:nowrap}
+  .t-ok{color:var(--ok)} .t-warn{color:var(--warn)} .t-bad{color:var(--bad)} .t-na{color:var(--ink-2)}
+
+  /* 严重度定义 */
+  .sev{margin:4px 0 18px;padding:0;list-style:none;font-size:14px}
+  .sev li{display:flex;gap:12px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line)}
+  .sev li:first-child{border-top:1px solid var(--line)}
+  .sev .tag{flex:0 0 auto}
+
+  /* 发现 */
+  .find{display:grid;grid-template-columns:52px 1fr;gap:0 14px;padding:14px 0;border-top:1px solid var(--line)}
+  .find:last-of-type{border-bottom:1px solid var(--line)}
+  .find .id{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;padding-top:2px}
+  .find h3{margin:0 0 6px;font-size:15px;font-weight:600;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .find p{margin:0 0 4px;font-size:14px}
+  .find dl{margin:6px 0 0;display:grid;grid-template-columns:max-content 1fr;gap:3px 12px;font-size:14px}
+  .find dt{color:var(--ink-2)} .find dd{margin:0}
+
+  /* 建议动作：真实顺序，所以编号 */
+  ol.steps{margin:4px 0 0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;display:grid;grid-template-columns:36px 1fr;gap:12px;padding:9px 0;
+              border-bottom:1px solid var(--line);font-size:14.5px}
+  ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--mono);
+              font-variant-numeric:tabular-nums;color:var(--ink-2);font-weight:600;padding-top:1px}
+  ol.steps li:first-child{border-top:1px solid var(--line)}
+  ol.steps .when{color:var(--ink-3);font-size:13px;margin-left:8px}
+
+  footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);
+         font-size:12.5px;color:var(--ink-3)}
+
+  @media (max-width:640px){
+    .score{grid-template-columns:1fr}
+    .score div + div{border-left:0;border-top:1px solid var(--line)}
+  }
+  @media (max-width:560px){ .wrap{padding:24px 16px 48px} .head h1{font-size:23px} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+  @media print{
+    @page{size:A4 portrait;margin:14mm}
+    body{background:#fff;font-size:11.5pt}
+    .wrap{max-width:none;padding:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table,tr,td,th,.score,.find,ol.steps li{break-inside:avoid}
+    h2,h3{break-after:avoid}
+    details{break-inside:avoid;content-visibility:visible!important}
+    details::details-content{content-visibility:visible!important;block-size:auto!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <h1>M-2296 中控面板 T1 试模检测报告</h1>
+    <p class="verdict"><b>T1 不通过。</b>12 项中 9 项通过、2 项不通过、1 项不适用；总宽超差 0.06 mm 需修模，修模后建议 T2 日期 09-22。</p>
+    <p class="meta"><b>生成</b> 2026-09-08 17:05　<b>数据截止</b> 2026-09-08 16:30　<b>范围</b> T1 试模首件，取样 5 模，检测 12 项</p>
+  </header>
+
+  <h2>总评</h2>
+  <div class="score" role="group" aria-label="12 项检测结果汇总">
+    <div><span class="big pass">9</span><span class="lab">通过</span><span class="sub">共 12 项</span></div>
+    <div><span class="big fail">2</span><span class="lab">不通过</span><span class="sub">产品总宽、缩痕</span></div>
+    <div><span class="big">1</span><span class="lab">不适用</span><span class="sub">耐热试验，计划在 T2 做</span></div>
+  </div>
+  <p class="lede">按严重度定义，阻止进入 T2 的只有 1 条：产品总宽超差 0.06 mm，需修模。</p>
+
+  <h2>逐条检测结果</h2>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr><th class="r">#</th><th>条目</th><th>结论</th><th class="r">实测值</th><th class="r">要求值</th><th>证据</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="r num">1</td><td>产品总长</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">412.08 mm</td><td class="r num">412.00 ±0.15 mm</td><td>三坐标报告 CMM-0908-01</td></tr>
+      <tr class="fail"><td class="r num">2</td><td>产品总宽</td><td><span class="tag t-bad">不通过</span></td>
+          <td class="r num actual">186.71 mm</td><td class="r num">186.50 ±0.15 mm</td><td>三坐标报告 CMM-0908-01</td></tr>
+      <tr><td class="r num">3</td><td>卡扣位置度</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">0.07 mm</td><td class="r num">≤0.10 mm</td><td>三坐标报告 CMM-0908-01</td></tr>
+      <tr><td class="r num">4</td><td>壁厚</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">2.46 mm</td><td class="r num">2.50 ±0.10 mm</td><td>壁厚仪抽测 5 点</td></tr>
+      <tr class="fail"><td class="r num">5</td><td>缩痕</td><td><span class="tag t-bad">不通过</span></td>
+          <td class="r actual">B 面 2 处</td><td class="r">外观面不允许</td><td>外观检查单 VI-0908 + 照片 2 张</td></tr>
+      <tr><td class="r num">6</td><td>飞边</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">0.03 mm</td><td class="r num">≤0.05 mm</td><td>外观检查单 VI-0908</td></tr>
+      <tr><td class="r num">7</td><td>顶白</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r actual">无</td><td class="r">不允许</td><td>外观检查单 VI-0908</td></tr>
+      <tr><td class="r num">8</td><td>熔接线</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r actual">位于非外观面</td><td class="r">外观面不允许</td><td>外观检查单 VI-0908</td></tr>
+      <tr><td class="r num">9</td><td>翘曲</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">0.38 mm</td><td class="r num">≤0.50 mm</td><td>平台塞尺</td></tr>
+      <tr><td class="r num">10</td><td>注塑周期</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">43.2 s</td><td class="r num">≤45 s</td><td>注塑机记录 09-08</td></tr>
+      <tr><td class="r num">11</td><td>浇口残留</td><td><span class="tag t-ok">通过</span></td>
+          <td class="r num actual">0.22 mm</td><td class="r num">≤0.30 mm</td><td>外观检查单 VI-0908</td></tr>
+      <tr><td class="r num">12</td><td>耐热试验</td><td><span class="tag t-na">不适用</span></td>
+          <td class="r actual">本次未做</td><td class="r">85 ℃ / 24 h 无变形</td><td>计划在 T2 做</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>发现</h2>
+  <p class="lede">按严重度排序。严重度是排优先级用的，三级定义如下：</p>
+  <ul class="sev">
+    <li><span class="tag t-bad">严重</span><span>阻止进入 T2，或影响装配</span></li>
+    <li><span class="tag t-warn">一般</span><span>需在 T2 前整改</span></li>
+    <li><span class="tag t-na">轻微</span><span>记录，T2 复测</span></li>
+  </ul>
+
+  <article class="find">
+    <div class="id">F1</div>
+    <div>
+      <h3><span class="tag t-bad">严重</span>产品总宽超差 +0.21 mm（超出上限 0.06 mm）</h3>
+      <dl>
+        <dt>建议动作</dt><dd>型腔宽度方向修模 −0.20 mm，保留 0.01 mm 收缩余量。</dd>
+        <dt>责任</dt><dd>模具车间</dd>
+        <dt>期限</dt><dd class="num">09-19</dd>
+      </dl>
+    </div>
+  </article>
+  <article class="find">
+    <div class="id">F2</div>
+    <div>
+      <h3><span class="tag t-warn">一般</span>B 面缩痕 2 处（加强筋根部）</h3>
+      <dl>
+        <dt>建议动作</dt><dd>先把该区域保压时间加 0.3 s、保压压力提高 5% 再打 5 模；仍有缩痕则把加强筋根部壁厚由 1.5 mm 改 1.2 mm。</dd>
+        <dt>责任</dt><dd>工艺组</dd>
+        <dt>期限</dt><dd class="num">09-15</dd>
+      </dl>
+    </div>
+  </article>
+  <article class="find">
+    <div class="id">F3</div>
+    <div>
+      <h3><span class="tag t-na">轻微</span>壁厚 2.46 mm 偏下限</h3>
+      <dl>
+        <dt>建议动作</dt><dd>记录，T2 复测。</dd>
+        <dt>责任</dt><dd>工艺组</dd>
+        <dt>期限</dt><dd>T2 当日</dd>
+      </dl>
+    </div>
+  </article>
+
+  <h2>建议动作</h2>
+  <p class="lede">按先后顺序列出。</p>
+  <ol class="steps">
+    <li><span>修模（F1）<span class="when">模具车间，09-19 前</span></span></li>
+    <li><span>工艺验证（F2）<span class="when">工艺组，09-15 前</span></span></li>
+    <li><span>T2 试模<span class="when">建议日期 09-22</span></span></li>
+    <li><span>T2 加做耐热试验（第 12 项）<span class="when">85 ℃ / 24 h 无变形</span></span></li>
+  </ol>
+
+  <footer>示例数据，全部虚构。单文件，零外链，A4 可打印。</footer>
+
+</div>
+</body>
+</html>

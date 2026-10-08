@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-2308 T1 试模受阻</title>
+<style>
+  :root{
+    /* themes/slate.md */
+    --paper:#12151A; --panel:#1A1F27; --ink:#E6E9EE; --ink-2:#9AA3B0; --ink-3:#6B7582;
+    --line:#2A3039; --accent:#4FA3C7;
+    --ok:#4FB286; --warn:#D9A441; --bad:#E06C6C;
+    --sans:"PingFang SC","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--sans);
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 72px}
+
+  /* 页眉带：标题 + 一句话结论 + 生成时间 + 数据截止 */
+  .head{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+  .head h1{margin:0 0 10px;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+  .verdict{margin:0;font-size:17px;line-height:1.55;max-width:62ch}
+  .verdict b{color:var(--bad);font-weight:600}
+  .meta{margin:12px 0 0;font-size:13px;color:var(--ink-3)}
+  .meta b{color:var(--ink-2);font-weight:500}
+
+  h2{margin:36px 0 12px;font-size:19px;font-weight:700;letter-spacing:-.005em}
+  p{margin:0 0 12px;max-width:74ch}
+  .lede{color:var(--ink-2);font-size:14px;margin-top:-4px}
+
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* 现象 / 根因：两行并列，标签列告诉读者这两行是不同性质的东西 */
+  dl.pair{margin:6px 0 4px;display:grid;grid-template-columns:5em 1fr;row-gap:10px;column-gap:14px}
+  dl.pair dt{font-size:14px;font-weight:600;color:var(--ink-2);padding-top:1px}
+  dl.pair dd{margin:0;max-width:74ch}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 10px}
+  th{text-align:left;font-weight:600;color:var(--ink-2);padding:8px 10px;
+     border-bottom:1.5px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td:last-child,th:last-child{white-space:nowrap}
+  .scroll{overflow-x:auto}
+
+  /* 主角：需要谁做什么。强调色只用在这一块的边框 */
+  .focus{background:var(--panel);border:2px solid var(--accent);border-radius:6px;padding:4px 14px 2px;margin:6px 0 4px}
+  .focus table{font-size:15px;margin:0}
+  .focus th{border-bottom-color:var(--ink-2)}
+  .focus td{padding:11px 10px}
+  .focus tr:last-child td{border-bottom:0}
+  .focus td.who{font-weight:600;white-space:nowrap}
+
+  ul{margin:0 0 12px;padding-left:1.2em;max-width:74ch}
+  li{margin:0 0 6px}
+
+  footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);
+         font-size:12.5px;color:var(--ink-3)}
+
+  @media (max-width:560px){
+    .wrap{padding:24px 16px 48px} .head h1{font-size:23px}
+    dl.pair{grid-template-columns:1fr;row-gap:2px} dl.pair dd{margin-bottom:8px}
+    .focus{padding:0 8px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+  @media print{
+    /* themes/slate.md：打印切回浅色 */
+    :root{--paper:#fff;--panel:#fff;--ink:#111;--ink-2:#555;--ink-3:#888;--line:#ddd;
+          --accent:#1F4E6E;--ok:#2E7D5B;--warn:#96610F;--bad:#A81F1F}
+    @page{size:A4 portrait;margin:14mm}
+    body{background:#fff;font-size:11.5pt}
+    .wrap{max-width:none;padding:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table,tr,td,th,.focus,dl.pair{break-inside:avoid}
+    h2{break-after:avoid}
+    details{break-inside:avoid;content-visibility:visible!important}
+    details::details-content{content-visibility:visible!important;block-size:auto!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <h1>M-2308 T1 试模受阻</h1>
+    <p class="verdict">型腔 EDM 因电极外协排产推迟<b>已停工 6 天</b>；需要采购部在 09-15 前确认外协排产，否则模具车间 09-16 起自制电极（再加 4 天）。</p>
+    <p class="meta"><b>生成</b> 2026-09-10 20:15　<b>数据截止</b> 2026-09-10 18:00　<b>范围</b> M-2308 前保险杠格栅</p>
+  </header>
+
+  <h2>卡点</h2>
+  <p>型腔 EDM 停工，电极未到。停工从 09-04 开始，已 6 天。</p>
+
+  <h2>根因</h2>
+  <dl class="pair">
+    <dt>现象</dt>
+    <dd>电极 09-02 应到未到，EDM 工位空置。</dd>
+    <dt>根因</dt>
+    <dd>外协电极厂 09-01 起优先一个大客户订单，我方 3 件电极的排产从 09-02 推到 09-12（外协厂 09-09 邮件确认）。</dd>
+  </dl>
+
+  <h2>需要谁做什么</h2>
+  <div class="focus">
+    <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>谁</th><th>做什么</th><th>期限</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="who">采购部</td><td>与外协厂确认 09-12 排产是否能保住，拿到书面交期</td><td class="num">09-15</td></tr>
+        <tr><td class="who">模具车间</td><td>如采购部 09-15 未拿到确认，启动自制电极（3 件）</td><td class="num">09-16 启动</td></tr>
+        <tr><td class="who">项目组</td><td>向客户更新 T1 日期（09-04 → 09-16）</td><td class="num">09-12</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <h2>临时绕法</h2>
+  <p>模具车间自制电极。库存铜料够 3 件；需 4 天。</p>
+  <p><b>代价：</b>占用 M-2311 的 EDM 机时 2 天，M-2311 型腔加工会相应后移 2 天（目前 M-2311 有 5 天缓冲）。</p>
+
+  <h2>影响面</h2>
+  <ul>
+    <li>T1 试模：09-04 → 09-16（外协确认）或 09-20（自制）</li>
+    <li>客户 SOP 节点 11-02：缓冲从 12 天减到 6 天（外协）或 2 天（自制）</li>
+    <li>关联模具 M-2311：自制方案下型腔加工后移 2 天，仍在缓冲内</li>
+  </ul>
+
+  <footer>示例数据，全部虚构。单文件，零外链，A4 可打印；打印时自动切回浅色。</footer>
+
+</div>
+</body>
+</html>

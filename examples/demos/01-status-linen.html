@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>注塑模具开发周报 · 第 37 周</title>
+<style>
+  :root{
+    /* themes/linen.md */
+    --paper:#FCFCFB; --panel:#FFFFFF; --ink:#1C1D1F; --ink-2:#5B6068; --ink-3:#8A9099;
+    --line:#E3E5E8; --accent:#2F4B7C;
+    --ok:#2E7D5B; --warn:#B7791F; --bad:#B3261E;
+    --sans:"PingFang SC","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--sans);
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 72px}
+
+  /* 页眉带：标题 + 一句话结论 + 生成时间 + 数据截止时间 */
+  .head{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+  .head h1{margin:0 0 10px;font-size:28px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+  .verdict{margin:0;font-size:17px;line-height:1.55;max-width:62ch}
+  .verdict b{color:var(--bad);font-weight:600}
+  .meta{margin:12px 0 0;font-size:13px;color:var(--ink-3)}
+  .meta b{color:var(--ink-2);font-weight:500}
+
+  h2{margin:36px 0 12px;font-size:19px;font-weight:700;letter-spacing:-.005em}
+  h2 .n{color:var(--ink-3);font-weight:400;font-size:15px;margin-left:8px}
+  h3{margin:22px 0 6px;font-size:15px;font-weight:600}
+  p{margin:0 0 12px;max-width:74ch}
+  .lede{color:var(--ink-2);font-size:14px;margin-top:-4px}
+
+  /* 等宽只给数字用 */
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* 对象看板：四格横排，便于横向比较 */
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:6px 0 4px}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 15px}
+  .cell.focus{border-color:var(--accent);border-width:2px;padding:13px 14px}
+  .cell h3{margin:0 0 2px;font-size:15.5px;font-weight:600}
+  .cell .prod{margin:0 0 6px;font-size:13px;color:var(--ink-2)}
+  .cell .stage{font-size:13px;color:var(--ink-2);margin:0 0 10px}
+  .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:30px;
+       line-height:1.1;font-weight:600;letter-spacing:-.02em;margin:0}
+  .big.late{color:var(--bad)}
+  .big .u{font-size:13px;font-weight:400;color:var(--ink-2);margin-left:3px;font-family:var(--sans)}
+  .cell .next{margin:8px 0 0;font-size:12.5px;color:var(--ink-3)}
+
+  .tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12.5px;
+       font-weight:500;border:1px solid currentColor;white-space:nowrap}
+  .t-ok{color:var(--ok)} .t-warn{color:var(--warn)} .t-bad{color:var(--bad)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 10px}
+  th{text-align:left;font-weight:600;color:var(--ink-2);padding:8px 10px;
+     border-bottom:1.5px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.r,th.r{text-align:right}
+  .scroll{overflow-x:auto}
+
+  /* 异常明细：一项一块，原因折叠 */
+  .issue{margin:0 0 18px}
+  .issue h3{margin:0 0 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .issue p{margin:0 0 6px;font-size:14.5px}
+  .issue .who b{font-weight:600}
+
+  details{border-top:1px solid var(--line);padding:9px 0}
+  details:last-of-type{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;font-size:14px;color:var(--ink-2);list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"＋ ";color:var(--ink-3)}
+  details[open] summary::before{content:"－ "}
+  details p{margin:9px 0 4px;font-size:14px;color:var(--ink)}
+
+  /* 时间线：手写内联 SVG */
+  .timeline svg{display:block;width:100%;height:auto;min-width:640px}
+  .axis{font:400 11px var(--sans);fill:var(--ink-3)}
+  .lbl{font:500 12px var(--sans);fill:var(--ink-2)}
+  .legend{margin:6px 0 0;font-size:12.5px;color:var(--ink-3)}
+
+  footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);
+         font-size:12.5px;color:var(--ink-3)}
+
+  @media (max-width:860px){ .board{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:480px){ .board{grid-template-columns:1fr} }
+  @media (max-width:560px){ .wrap{padding:24px 16px 48px} .head h1{font-size:23px} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+  @media print{
+    @page{size:A4 portrait;margin:14mm}
+    body{background:#fff;font-size:11.5pt}
+    .wrap{max-width:none;padding:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .board{grid-template-columns:repeat(4,1fr)}
+    table,tr,td,th,.cell,.issue,details,.timeline{break-inside:avoid}
+    h2{break-after:avoid}
+    .timeline svg{min-width:0}
+    /* 折叠块摊开：覆盖 ::details-content 的 content-visibility，写 display 无效 */
+    details{break-inside:avoid;content-visibility:visible!important}
+    details::details-content{content-visibility:visible!important;block-size:auto!important}
+    summary{color:var(--ink);font-weight:600}
+    summary::before{content:""}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <h1>注塑模具开发周报 · 第 37 周</h1>
+    <p class="verdict">4 套在制模具中 3 套在计划内；<b>M-2308 延期 6 天</b>，T1 试模由 09-04 改到 09-16，需要采购部在 09-15 前确认电极外协排产。</p>
+    <p class="meta"><b>生成</b> <span class="num">2026-09-11 14:20</span>　<b>数据截止</b> <span class="num">2026-09-10 18:00</span>　<b>范围</b> 4 套在制模具</p>
+  </header>
+
+  <h2>对象看板<span class="n">4 套</span></h2>
+  <div class="board">
+    <div class="cell focus">
+      <h3>M-2308</h3>
+      <p class="prod">前保险杠格栅</p>
+      <p class="stage">T1 试模　<span class="tag t-bad">异常</span></p>
+      <p class="big late">−6<span class="u">天</span></p>
+      <p class="next">下一节点：T1 试模 <span class="num">09-16</span></p>
+    </div>
+    <div class="cell">
+      <h3>M-2319</h3>
+      <p class="prod">后视镜壳</p>
+      <p class="stage">钢料采购　<span class="tag t-warn">注意</span></p>
+      <p class="big">0<span class="u">天</span></p>
+      <p class="next">下一节点：钢料到货 <span class="num">09-14</span></p>
+    </div>
+    <div class="cell">
+      <h3>M-2311</h3>
+      <p class="prod">仪表板骨架</p>
+      <p class="stage">型腔加工　<span class="tag t-ok">正常</span></p>
+      <p class="big">0<span class="u">天</span></p>
+      <p class="next">下一节点：T0 试模 <span class="num">09-24</span></p>
+    </div>
+    <div class="cell">
+      <h3>M-2315</h3>
+      <p class="prod">门内饰板</p>
+      <p class="stage">设计评审　<span class="tag t-ok">正常</span></p>
+      <p class="big">+2<span class="u">天</span></p>
+      <p class="next">下一节点：设计冻结 <span class="num">09-18</span></p>
+    </div>
+  </div>
+  <p class="legend">大数字为计划偏差（天），负数＝延期。</p>
+
+  <h2>时间线<span class="n">08-24 → 10-05</span></h2>
+  <div class="scroll timeline">
+  <!-- 横轴 08-24 → 10-05，每天 18px，x = 100 + 天数×18；今天 09-10 = x 406 -->
+  <svg viewBox="0 0 880 240" role="img"
+       aria-label="四套模具的时间线：今天 09-10；M-2308 计划 T1 09-04 已逾期，新 T1 09-16；M-2319 钢料到货 09-14；M-2311 T0 试模 09-24；M-2315 设计冻结 09-18">
+    <g class="axis" text-anchor="middle">
+      <text x="100" y="16">08-24</text><text x="226" y="16">08-31</text>
+      <text x="352" y="16">09-07</text><text x="478" y="16">09-14</text>
+      <text x="604" y="16">09-21</text><text x="730" y="16">09-28</text>
+      <text x="856" y="16">10-05</text>
+    </g>
+    <g style="stroke:var(--line)" stroke-width="1">
+      <line x1="100" y1="24" x2="100" y2="222"/><line x1="226" y1="24" x2="226" y2="222"/>
+      <line x1="352" y1="24" x2="352" y2="222"/><line x1="478" y1="24" x2="478" y2="222"/>
+      <line x1="604" y1="24" x2="604" y2="222"/><line x1="730" y1="24" x2="730" y2="222"/>
+      <line x1="856" y1="24" x2="856" y2="222"/>
+    </g>
+
+    <!-- 今天 09-10 -->
+    <line x1="406" y1="22" x2="406" y2="226" style="stroke:var(--accent)" stroke-width="2"/>
+    <text x="412" y="34" class="lbl" style="fill:var(--accent);font-weight:600">今天 09-10</text>
+
+    <!-- M-2308：计划 T1 09-04 已逾期，虚线拖到今天；新 T1 09-16 -->
+    <text x="84" y="66" class="lbl" text-anchor="end">M-2308</text>
+    <line x1="100" y1="62" x2="298" y2="62" style="stroke:var(--bad)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="298" y1="62" x2="406" y2="62" style="stroke:var(--bad)" stroke-width="6"
+          stroke-linecap="round" stroke-dasharray="2 6"/>
+    <line x1="406" y1="62" x2="514" y2="62" style="stroke:var(--line)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="298" cy="62" r="5.5" style="fill:var(--paper);stroke:var(--bad)" stroke-width="2.5"/>
+    <text x="298" y="84" class="axis" text-anchor="middle" style="fill:var(--bad)">计划 T1 09-04 · 已逾期 6 天</text>
+    <circle cx="514" cy="62" r="5.5" style="fill:var(--paper);stroke:var(--bad)" stroke-width="2.5"/>
+    <text x="527" y="66" class="axis" style="fill:var(--bad)">新 T1 09-16</text>
+
+    <!-- M-2319：钢料到货 09-14（临近） -->
+    <text x="84" y="110" class="lbl" text-anchor="end">M-2319</text>
+    <line x1="100" y1="106" x2="406" y2="106" style="stroke:var(--warn)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="406" y1="106" x2="478" y2="106" style="stroke:var(--line)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="478" cy="106" r="5.5" style="fill:var(--paper);stroke:var(--warn)" stroke-width="2.5"/>
+    <text x="491" y="110" class="axis">钢料到货 09-14</text>
+
+    <!-- M-2311：T0 试模 09-24 -->
+    <text x="84" y="154" class="lbl" text-anchor="end">M-2311</text>
+    <line x1="100" y1="150" x2="406" y2="150" style="stroke:var(--ok)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="406" y1="150" x2="658" y2="150" style="stroke:var(--line)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="658" cy="150" r="5.5" style="fill:var(--paper);stroke:var(--ok)" stroke-width="2.5"/>
+    <text x="671" y="154" class="axis">T0 试模 09-24</text>
+
+    <!-- M-2315：设计冻结 09-18 -->
+    <text x="84" y="198" class="lbl" text-anchor="end">M-2315</text>
+    <line x1="100" y1="194" x2="406" y2="194" style="stroke:var(--ok)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="406" y1="194" x2="550" y2="194" style="stroke:var(--line)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="550" cy="194" r="5.5" style="fill:var(--paper);stroke:var(--ok)" stroke-width="2.5"/>
+    <text x="563" y="198" class="axis">设计冻结 09-18</text>
+  </svg>
+  </div>
+  <p class="legend">实线＝已过去；浅灰＝未来；虚线＝已逾期，拖到今天；圆点＝节点。</p>
+
+  <h2>异常明细<span class="n">2 项</span></h2>
+  <p class="lede">只列延期与有风险的；M-2311、M-2315 在计划内，不占版面。</p>
+
+  <div class="issue">
+    <h3><span class="tag t-bad">异常</span>M-2308 · 延期 6 天</h3>
+    <p>新日期：T1 试模 <span class="num">09-16</span>（原 <span class="num">09-04</span>）。</p>
+    <p class="who"><b>待处理：采购部</b>，<span class="num">09-15</span> 前确认外协排产；确认不了则模具车间自制电极（+4 天）。</p>
+    <details>
+      <summary>原因</summary>
+      <p>电极外协厂 09-01 起优先其他客户订单，我方电极排产从 09-02 推到 09-12，型腔 EDM 停工 6 天。</p>
+    </details>
+  </div>
+
+  <div class="issue">
+    <h3><span class="tag t-warn">注意</span>M-2319 · 风险</h3>
+    <p>钢料到货日 <span class="num">09-14</span>，截至 09-10 供应商尚未发出发货通知。</p>
+    <p class="who"><b>待处理：采购部</b>，<span class="num">09-11</span> 跟催。</p>
+  </div>
+
+  <h2>本期变化<span class="n">与第 36 周比</span></h2>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr><th>模具</th><th>项</th><th class="r">第 36 周</th><th class="r">第 37 周</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>M-2308</td><td>T1 试模</td>
+          <td class="r num">09-04</td><td class="r num" style="color:var(--bad)">09-16</td>
+          <td>延期 6 天</td></tr>
+      <tr><td>M-2311</td><td>型腔加工完成率</td>
+          <td class="r num">40%</td><td class="r num">65%</td>
+          <td>在计划内</td></tr>
+      <tr><td>M-2315</td><td>设计评审完成</td>
+          <td class="r">计划 <span class="num">09-12</span></td><td class="r">实际 <span class="num">09-10</span></td>
+          <td>提前 2 天完成</td></tr>
+      <tr><td>M-2319</td><td>—</td>
+          <td class="r num">—</td><td class="r num">—</td>
+          <td>无变化</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <footer>示例数据，全部虚构。</footer>
+
+</div>
+</body>
+</html>

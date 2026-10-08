@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模具钢料供应商选型对比</title>
+<style>
+  :root{
+    /* themes/press.md */
+    --paper:#FFFFFF; --panel:#F6F5F3; --ink:#111111; --ink-2:#57544F; --ink-3:#8D8880;
+    --line:#DEDAD4; --accent:#A61B29;
+    --ok:#2C6E49; --warn:#9C6510; --bad:#A61B29;
+    --serif:"Source Han Serif SC","Noto Serif SC","Songti SC","SimSun",Georgia,serif;
+    --sans:"PingFang SC","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:400 15.5px/1.75 var(--sans);
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:56px 24px 80px}
+
+  /* 页眉带：标题 + 一句话结论 + 生成时间 + 数据截止 */
+  .head{border-bottom:1px solid var(--ink);padding-bottom:26px;margin-bottom:8px}
+  .head h1{margin:0 0 18px;font-family:var(--serif);font-size:38px;line-height:1.2;
+           font-weight:700;letter-spacing:.01em}
+  .verdict{margin:0;font-size:17px;line-height:1.7;max-width:62ch}
+  .verdict b{color:var(--accent);font-weight:600}
+  .meta{margin:18px 0 0;font-size:13px;line-height:1.9;color:var(--ink-3)}
+  .meta b{color:var(--ink-2);font-weight:500;margin-right:4px}
+  .meta span{display:inline-block;margin-right:22px}
+
+  h2{margin:52px 0 16px;padding-top:22px;border-top:1px solid var(--line);
+     font-family:var(--serif);font-size:25px;line-height:1.2;font-weight:700}
+  .head + h2{border-top:0;padding-top:0;margin-top:40px}   /* 页眉带已有一根线，不叠第二根 */
+  h3{margin:30px 0 8px;font-family:var(--serif);font-size:18px;line-height:1.2;font-weight:700}
+  p{margin:0 0 14px;max-width:66ch}
+  ul{margin:0 0 14px;padding-left:1.4em;max-width:66ch}
+  li{margin:0 0 8px}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* 推荐理由：三条带数字的理由，一条代价 */
+  .why{margin:8px 0 0;padding:0;list-style:none;max-width:66ch}
+  .why li{display:grid;grid-template-columns:5.5em 1fr;gap:12px;padding:12px 0;
+          border-bottom:1px solid var(--line);margin:0}
+  .why li:first-child{border-top:1px solid var(--line)}
+  .why .k{font-family:var(--serif);font-weight:700;font-size:16px;line-height:1.75}
+
+  /* 对比表：推荐列用浅底 + 朱砂表头；每行最优值加粗 */
+  table{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 10px}
+  th{text-align:left;font-weight:600;color:var(--ink-2);padding:10px 12px;
+     border-bottom:1.5px solid var(--line);white-space:nowrap;vertical-align:bottom}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.r,th.r{text-align:right}
+  th.rec{color:var(--accent);border-bottom-color:var(--accent)}
+  th.rec,td.rec{background:var(--panel)}
+  td.best{font-weight:700}
+  .tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12px;font-weight:500;
+       border:1px solid currentColor;white-space:nowrap;vertical-align:1px;margin-left:6px}
+  .scroll{overflow-x:auto}
+  .cap{font-size:13px;color:var(--ink-2);margin:0 0 6px;max-width:66ch}
+
+  /* 内联 SVG 条形图：颜色走变量，数值直接标在条旁 */
+  figure{margin:14px 0 18px;max-width:640px}
+  figure svg{display:block;width:100%;height:auto}
+  figcaption{font-size:13px;color:var(--ink-2);margin-top:6px}
+  .bar{fill:var(--ink-3)}
+  .bar.rec{fill:var(--accent)}
+  .lbl{font:500 13px var(--sans);fill:var(--ink)}
+  .val{font:500 13px var(--mono);fill:var(--ink)}
+  .val.rec{fill:var(--accent);font-weight:600}
+  .axis{font:400 11px var(--sans);fill:var(--ink-3)}
+  .grid{stroke:var(--line);stroke-width:1}
+
+  /* 前提块：浅底面板，4px 圆角 */
+  .premise{background:var(--panel);border-radius:4px;padding:16px 20px;margin:0 0 18px;max-width:66ch}
+  .premise p{margin:0}
+
+  footer{margin-top:64px;padding-top:14px;border-top:1px solid var(--line);
+         font-size:12.5px;color:var(--ink-3)}
+
+  @media (max-width:560px){
+    .wrap{padding:32px 16px 56px}
+    .head h1{font-size:30px}
+    h2{font-size:22px;margin-top:40px}
+    .why li{grid-template-columns:1fr;gap:2px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+  @media print{
+    @page{size:A4 portrait;margin:14mm}
+    body{background:#fff;font-size:11pt}
+    .wrap{max-width:none;padding:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table,tr,td,th,figure,.premise,.why li{break-inside:avoid}
+    h2,h3,.cap,h3 + p{break-after:avoid}   /* 标题及其引导句不和表/图分家 */
+    .head h1{font-size:28pt}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <h1>模具钢料供应商选型对比</h1>
+    <p class="verdict"><b>推荐切换到供应商 B。</b>单价比现用供应商 A 高 7%，年采购 12 t 多花 32,400 元，但交期短 9 天、退货率低 1.7 个百分点；上半年 3 次试模延期（累计 14 天）都和钢料到货晚有关。</p>
+    <p class="meta">
+      <span><b>生成</b>2026-09-05 10:40</span>
+      <span><b>数据截止</b>2026-09-04（近 12 个月采购与质量记录）</span>
+      <span><b>范围</b>3 家候选供应商，钢种 P20 预硬钢</span>
+    </p>
+  </header>
+
+  <h2>推荐与理由</h2>
+  <p>三家候选中推荐供应商 B：交期与质量两项都是三家最好，代价是单价高于现用的 A。</p>
+  <ul class="why">
+    <li><span class="k">交期</span>
+        <span>标准交期 <span class="num">12</span> 天，比 A 短 9 天；近 12 个月交期准时率 94%，A 为 71%。上半年 3 次试模延期（累计 14 天）均因钢料晚到。</span></li>
+    <li><span class="k">质量</span>
+        <span>近 12 个月退货率 0.4%，比 A 低 1.7 个百分点；批次硬度波动 ±0.8 HRC，三家中最小。</span></li>
+    <li><span class="k">起订量</span>
+        <span>最小起订 300 kg，适合小批量试模件。</span></li>
+    <li><span class="k">代价</span>
+        <span>单价 41.2 元/kg，比 A 高 7%；按年采购 12 t 计，比 A 多花 32,400 元/年。</span></li>
+  </ul>
+
+  <h2>对比表</h2>
+  <p class="cap">六个维度每一维都分得出高下，每行加粗为该维最优；浅底一列为推荐方案。</p>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th class="r">供应商 A（现用）</th>
+        <th class="r rec">供应商 B<span class="tag">推荐</span></th>
+        <th class="r">供应商 C</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>单价（元/kg）</td>
+          <td class="r num">38.5</td><td class="r num rec">41.2</td><td class="r num best">35.0</td></tr>
+      <tr><td>标准交期（天）</td>
+          <td class="r num">21</td><td class="r num rec best">12</td><td class="r num">28</td></tr>
+      <tr><td>批次硬度波动（HRC）</td>
+          <td class="r num">±1.5</td><td class="r num rec best">±0.8</td><td class="r num">±2.2</td></tr>
+      <tr><td>近 12 个月退货率</td>
+          <td class="r num">2.1%</td><td class="r num rec best">0.4%</td><td class="r num">3.6%</td></tr>
+      <tr><td>最小起订量（kg）</td>
+          <td class="r num">500</td><td class="r num rec best">300</td><td class="r num">1000</td></tr>
+      <tr><td>近 12 个月交期准时率</td>
+          <td class="r num">71%</td><td class="r num rec best">94%</td><td class="r num">58%</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>逐维展开</h2>
+
+  <h3>成本</h3>
+  <p>按年采购 12 t 计，B 比 A 多 32,400 元/年，C 比 A 少 42,000 元/年。</p>
+
+  <h3>交期</h3>
+  <p>A 21 天、B 12 天、C 28 天。上半年 3 次试模延期（累计 14 天）均因钢料晚到。</p>
+  <figure>
+    <svg viewBox="0 0 640 136" role="img" aria-label="标准交期条形图：供应商 A 21 天，供应商 B 12 天，供应商 C 28 天">
+      <g class="axis" text-anchor="middle">
+        <text x="150" y="12">0</text><text x="300" y="12">10</text>
+        <text x="450" y="12">20</text><text x="600" y="12">30 天</text>
+      </g>
+      <g class="grid">
+        <line x1="150" y1="18" x2="150" y2="130"/><line x1="300" y1="18" x2="300" y2="130"/>
+        <line x1="450" y1="18" x2="450" y2="130"/><line x1="600" y1="18" x2="600" y2="130"/>
+      </g>
+      <text x="138" y="40" class="lbl" text-anchor="end">供应商 A（现用）</text>
+      <rect class="bar" x="150" y="25" width="315" height="22"/>
+      <text x="473" y="40" class="val">21</text>
+
+      <text x="138" y="78" class="lbl" text-anchor="end">供应商 B</text>
+      <rect class="bar rec" x="150" y="63" width="180" height="22"/>
+      <text x="338" y="78" class="val rec">12</text>
+
+      <text x="138" y="116" class="lbl" text-anchor="end">供应商 C</text>
+      <rect class="bar" x="150" y="101" width="420" height="22"/>
+      <text x="578" y="116" class="val">28</text>
+    </svg>
+    <figcaption>标准交期（天），数据截止 2026-09-04。</figcaption>
+  </figure>
+
+  <h3>质量</h3>
+  <p>B 硬度波动最小（±0.8 HRC），退货率 0.4%；C 退货率 3.6%，近 12 个月退货 4 批。</p>
+  <figure>
+    <svg viewBox="0 0 640 136" role="img" aria-label="近 12 个月退货率条形图：供应商 A 2.1%，供应商 B 0.4%，供应商 C 3.6%">
+      <g class="axis" text-anchor="middle">
+        <text x="150" y="12">0</text><text x="262.5" y="12">1</text><text x="375" y="12">2</text>
+        <text x="487.5" y="12">3</text><text x="600" y="12">4%</text>
+      </g>
+      <g class="grid">
+        <line x1="150" y1="18" x2="150" y2="130"/><line x1="262.5" y1="18" x2="262.5" y2="130"/>
+        <line x1="375" y1="18" x2="375" y2="130"/><line x1="487.5" y1="18" x2="487.5" y2="130"/>
+        <line x1="600" y1="18" x2="600" y2="130"/>
+      </g>
+      <text x="138" y="40" class="lbl" text-anchor="end">供应商 A（现用）</text>
+      <rect class="bar" x="150" y="25" width="236.25" height="22"/>
+      <text x="394" y="40" class="val">2.1%</text>
+
+      <text x="138" y="78" class="lbl" text-anchor="end">供应商 B</text>
+      <rect class="bar rec" x="150" y="63" width="45" height="22"/>
+      <text x="203" y="78" class="val rec">0.4%</text>
+
+      <text x="138" y="116" class="lbl" text-anchor="end">供应商 C</text>
+      <rect class="bar" x="150" y="101" width="405" height="22"/>
+      <text x="563" y="116" class="val">3.6%</text>
+    </svg>
+    <figcaption>近 12 个月退货率，数据截止 2026-09-04。</figcaption>
+  </figure>
+
+  <h3>起订量</h3>
+  <p>B 最小起订 300 kg，适合小批量试模件。</p>
+
+  <h2>什么情况下换选择</h2>
+  <div class="premise">
+    <p><b>推荐成立的前提：</b>试模排期紧（缓冲 &lt; 2 周）、年采购量在 10–15 t。前提变了，按下面两条换。</p>
+  </div>
+  <ul>
+    <li>年采购量超过 20 t 且交期不是瓶颈时，A 的单价优势会放大到 54,000 元/年以上，可考虑继续用 A。</li>
+    <li>只做非外观件、预算硬约束、且能提前 4 周下单时，可用 C。</li>
+  </ul>
+
+  <footer>示例数据，全部虚构。单文件，零外链，A4 可打印。</footer>
+
+</div>
+</body>
+</html>
